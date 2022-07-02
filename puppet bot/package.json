@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "@discordjs/opus": "github:discordjs/opus",
+    "ascii-table": "^0.0.9",
+    "canvas": "^2.9.1",
+    "discord-player": "^5.2.2",
+    "discord.js": "^13.7.0",
+    "ffmpeg": "^0.0.4",
+    "ffmpeg-static": "^4.4.1",
+    "glob": "^7.2.0",
+    "jquery-csv": "^1.0.21",
+    "mongodb": "^4.5.0",
+    "mongoose": "^6.2.10",
+    "mysql2": "^2.3.3",
+    "nodemon": "^2.0.16",
+    "serve": "^13.0.2"
+  },
+  "name": "puppet-bot",
+  "version": "1.0.0",
+  "main": "./Structures/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
