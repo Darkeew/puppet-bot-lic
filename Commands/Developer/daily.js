@@ -9,8 +9,29 @@ module.exports = {
      * @param {Client} client
      */
     async execute(interaction, client) {
+        const SettingsModel = require('../../Structures/Schema/Settings.js')
+        const is_blacklisted = await SettingsModel.findOne({channel: interaction.channel.id})
+        if(is_blacklisted !== null){
+            if(!is_blacklisted.blacklist.allowedchannels.commands.includes(`daily`)){
+                return interaction.reply({embeds: [
+                    new MessageEmbed()
+                    .setDescription(`This command has been disabled in this channel.`)
+                ], ephemeral: true})
+            }
+        } else if (is_blacklisted === null){
+            return interaction.reply({embeds: [
+                new MessageEmbed()
+                .setDescription(`This command has been disabled in this channel.`)
+            ], ephemeral: true})
+        }
         const EconomyChecker = require('../../Structures/Schema/Economy_Checker')
         const user_exists = await EconomyChecker.findOne({ user: interaction.user.id })
+        const CommandModel = require(`../../Structures/Schema/Command_Checker`)
+        const cmdschecker = await CommandModel.findOne({user: interaction.user.id})
+        if(!cmdschecker){
+            await CommandModel.create({user: interaction.user.id})
+        }
+        const usercmds = await CommandModel.findOne({user: interaction.user.id})
 
         if(!user_exists){
             await EconomyChecker.create({ user: interaction.user.id, balance: 0, daily_streak: 1 })
@@ -51,6 +72,13 @@ module.exports = {
         user_balance.daily_cooldown = cooldown
         user_balance.daily_last_claimed = Math.floor(Date.now() / 1000)
         await user_balance.save()
+        if(usercmds.dailies === undefined){
+            usercmds.dailies = 1
+            await usercmds.save()
+        } else {
+            usercmds.dailies++
+            await usercmds.save()
+        }
     }
 }
 

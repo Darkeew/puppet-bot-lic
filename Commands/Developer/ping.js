@@ -9,6 +9,21 @@ module.exports = {
      * @param {Client} client
      */
     async execute(interaction, client) {
+        const SettingsModel = require('../../Structures/Schema/Settings.js')
+        const is_blacklisted = await SettingsModel.findOne({channel: interaction.channel.id})
+        if(is_blacklisted !== null){
+            if(!is_blacklisted.blacklist.allowedchannels.commands.includes(`ping`)){
+                return interaction.reply({embeds: [
+                    new MessageEmbed()
+                    .setDescription(`This command has been disabled in this channel.`)
+                ], ephemeral: true})
+            }
+        } else if (is_blacklisted === null){
+            return interaction.reply({embeds: [
+                new MessageEmbed()
+                .setDescription(`This command has been disabled in this channel.`)
+            ], ephemeral: true})
+        }
         interaction.reply({embeds:[
             new MessageEmbed()
             .setColor(`DARK_GOLD`)

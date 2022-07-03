@@ -30,6 +30,27 @@ module.exports = {
      * @param {Client} client
      */
     async execute(interaction, client) {
+        const SettingsModel = require('../../Structures/Schema/Settings.js')
+        const is_blacklisted = await SettingsModel.findOne({channel: interaction.channel.id})
+        if(is_blacklisted !== null){
+            if(!is_blacklisted.blacklist.allowedchannels.commands.includes(`help`)){
+                return interaction.reply({embeds: [
+                    new MessageEmbed()
+                    .setDescription(`This command has been disabled in this channel.`)
+                ], ephemeral: true})
+            }
+        } else if (is_blacklisted === null){
+            return interaction.reply({embeds: [
+                new MessageEmbed()
+                .setDescription(`This command has been disabled in this channel.`)
+            ], ephemeral: true})
+        }
+        const CommandModel = require(`../../Structures/Schema/Command_Checker`)
+        const cmdchecker = await CommandModel.findOne({user: interaction.user.id})
+        if(!cmdchecker){
+            await CommandModel.create({user: interaction.user.id})
+        }
+        const usercmds = await CommandModel.findOne({user: interaction.user.id})
         if(interaction.toString() === `/help shop`){
         interaction.reply({embeds:[
             new MessageEmbed()
@@ -100,6 +121,13 @@ Welcome to the help command! Here you can see other commands and their use.
                 `)
                 .setTimestamp()
             ]})
+        }
+        if(usercmds.help === undefined){
+            usercmds.help = 1
+            await usercmds.save()
+        } else {
+            usercmds.help++
+            await usercmds.save()
         }
     }
 }

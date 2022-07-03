@@ -9,6 +9,27 @@ module.exports = {
      * @param {Client} client
      */
     async execute(interaction, client) {
+        const SettingsModel = require('../../Structures/Schema/Settings.js')
+        const CommandModel = require(`../../Structures/Schema/Command_Checker`)
+        const cmdchecker = await CommandModel.findOne({user: interaction.user.id})
+        if(!cmdchecker){
+            await CommandModel.create({user: interaction.user.id})
+        }
+        const usercmds = await CommandModel.findOne({user: interaction.user.id})
+        const is_blacklisted = await SettingsModel.findOne({channel: interaction.channel.id})
+        if(is_blacklisted !== null){
+            if(!is_blacklisted.blacklist.allowedchannels.commands.includes(`ask`)){
+                return interaction.reply({embeds: [
+                    new MessageEmbed()
+                    .setDescription(`This command has been disabled in this channel.`)
+                ], ephemeral: true})
+            }
+        } else if (is_blacklisted === null){
+            return interaction.reply({embeds: [
+                new MessageEmbed()
+                .setDescription(`This command has been disabled in this channel.`)
+            ], ephemeral: true})
+        }
         const EconomyChecker = require('../../Structures/Schema/Economy_Checker')
         const user_exists = await EconomyChecker.findOne({ user: interaction.user.id })
 
@@ -46,6 +67,21 @@ module.exports = {
         const cooldown = Math.floor((Date.now() / 1000) + 180)
         command.ask_cooldown = cooldown
         await command.save()
+        if(usercmds.asks === undefined){
+            usercmds.asks = 1
+            await usercmds.save()
+        } else {
+            usercmds.asks++
+            await usercmds.save()
+        }
+        if(usercmds.rejected_asks === undefined){
+            usercmds.rejected_asks = 1
+            await usercmds.save()
+        } else {
+            usercmds.rejected_asks++
+            await usercmds.save()
+        }
+
        } else {
         const random_message = Math.floor(Math.random() * 5)
         if (random_message === 1){
@@ -68,6 +104,20 @@ module.exports = {
         command.ask_cooldown = cooldown
         command.balance = new_balance
         await command.save()
+        if(usercmds.asks === undefined){
+            usercmds.asks = 1
+            await usercmds.save()
+        } else {
+            usercmds.asks++
+            await usercmds.save()
+        }
+        if(usercmds.accepted_asks === undefined){
+            usercmds.accepted_asks = 1
+            await usercmds.save()
+        } else {
+            usercmds.accepted_asks++
+            await usercmds.save()
+        }
        }
     }
 }

@@ -9,9 +9,24 @@ module.exports = {
      * @param {Client} client
      */
     async execute(interaction, client) {
+        const SettingsModel = require('../../Structures/Schema/Settings.js')
+        const is_blacklisted = await SettingsModel.findOne({channel: interaction.channel.id})
+        if(is_blacklisted !== null){
+            if(!is_blacklisted.blacklist.allowedchannels.commands.includes(`staff-list`)){
+                return interaction.reply({embeds: [
+                    new MessageEmbed()
+                    .setDescription(`This command has been disabled in this channel.`)
+                ], ephemeral: true})
+            }
+        } else if (is_blacklisted === null){
+            return interaction.reply({embeds: [
+                new MessageEmbed()
+                .setDescription(`This command has been disabled in this channel.`)
+            ], ephemeral: true})
+        }
         const list = client.guilds.cache.get(`986357448925401168`)
         await list.members.fetch()
-        //add the dumb settings stuff
+
 
         //check for trainees
         if(list.roles.cache.get(`986600882810544138`).members.size === 0) {

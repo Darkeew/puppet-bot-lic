@@ -85,15 +85,19 @@ module.exports = {
         const current_pages = await RestartsModel.findOne({owner: 'Darkeew'})
         const role = interaction.options.getRole(`role`)
         const SettingsModel = require('../../Structures/Schema/Settings.js')
-        //This is not working
         const is_blacklisted = await SettingsModel.findOne({channel: interaction.channel.id})
-        if(is_blacklisted){
+        if(is_blacklisted !== null){
             if(!is_blacklisted.blacklist.allowedchannels.commands.includes(`shop`)){
                 return interaction.reply({embeds: [
                     new MessageEmbed()
                     .setDescription(`This command has been disabled in this channel.`)
                 ], ephemeral: true})
             }
+        } else if (is_blacklisted === null){
+            return interaction.reply({embeds: [
+                new MessageEmbed()
+                .setDescription(`This command has been disabled in this channel.`)
+            ], ephemeral: true})
         }
         if(role !== null){
             global.roley = role.id
@@ -365,13 +369,13 @@ module.exports = {
                     .setTimestamp()
                 ]})
             }
-            if(!member.roles.cache.has(`946525953033646130`)){
-                return interaction.reply({embeds: [
-                    new MessageEmbed()
-                    .setAuthor({name: `Missing permissions`})
-                    .setDescription(`You dont have enough permissions to run this command!`)
-                ]})
-            }
+            //if(!member.roles.cache.has(`946525953033646130`)){
+            //    return interaction.reply({embeds: [
+            //        new MessageEmbed()
+            //        .setAuthor({name: `Missing permissions`})
+            //        .setDescription(`You dont have enough permissions to run this command!`)
+            //    ]})
+            //}
             if(what_pages != undefined){
                 if(!what_pages.pages){
                     await RestartsModel.updateOne({}, {pages: 1})

@@ -74,7 +74,7 @@ module.exports = {
     async execute(interaction, client) {
         const SettingsModel = require(`../../Structures/Schema/Settings`)
 
-        const command_array = [`ask`,`balance`,`claim-reward`,`daily`,`help`,`ping`,`shop`,`staff-list`]
+        const command_array = [`ask`,`balance`,`claim-reward`,`daily`,`help`,`ping`,`shop`,`staff-list`,`leaderboard`,`hug`]
 
        //const member = await interaction.guild.members.fetch(interaction.user.id)
        //if(!member.roles.cache.has(`970229987405877259`)){
@@ -222,7 +222,7 @@ ${channels}
                     return interaction.reply({embeds: [
                         new MessageEmbed()
                         .setAuthor({name:`Invalid Command`})
-                        .setDescription(`'\`${command_to_add}\`' is not a valid command! The valid commands are: \`ask, balance, claim-reward, daily, help, ping, shop, staff-list\` or you can type **All** to add all commands.`)
+                        .setDescription(`'\`${command_to_add}\`' is not a valid command! The valid commands are: \`ask, balance, claim-reward, daily, help, ping, shop, staff-list, leaderboard, hug\` or you can type **All** to add all commands.`)
                         .setColor(`DARK_GOLD`)
                         .setTimestamp()
                     ]})
@@ -245,7 +245,7 @@ ${channels}
                         .setTimestamp()
                     ]})
                 }
-                } else {
+                }
                     if(command_to_add.toLowerCase() === `all`){
                         if(channel_exists.blacklist.allowedchannels.commands.length === 8){
                             return interaction.reply({embeds: [
@@ -254,7 +254,7 @@ ${channels}
                             ], ephemeral: true})
                         }
                         if(channel_exists.blacklist.allowedchannels.commands.includes(`none`)){
-                            await SettingsModel.updateOne({channel: channel.id}, {blacklist: {allowedchannels: {commands: {$pull: `none`}}}})
+                            await SettingsModel.updateOne({channel: channel.id}, {blacklist: {allowedchannels: {commands: []}}})
                         }
                         interaction.reply({embeds: [
                             new MessageEmbed()
@@ -273,15 +273,21 @@ ${channels}
                         .setTimestamp()
                         
                     ]})
-                    await SettingsModel.updateOne({channel: channel.id}, {blacklist: {allowedchannels: {commands: {$push: {command_to_add}}}}})
-                }}
+                    if(channel_exists.blacklist.allowedchannels.commands.includes(`none`)){
+                        await SettingsModel.updateOne({channel: channel.id}, {blacklist: {allowedchannels: {commands: [command_to_add]}}})
+                        return
+                    }
+                    const array = await SettingsModel.findOne({channel: channel.id})
+                    array.blacklist.allowedchannels.commands.push(command_to_add)
+                    await array.save()
+                }
         } else if (interaction.toString().includes(`/settings allowed-commands channel:${channel.id} remove-command`)){
             if(command_to_remove.toLowerCase() !== `all`){
             if(!command_array.includes(command_to_remove)){
                 return interaction.reply({embeds: [
                     new MessageEmbed()
                     .setAuthor({name:`Invalid Command`})
-                    .setDescription(`'\`${command_to_remove}\`' is not a valid command! The valid commands are: \`ask, balance, claim-reward, daily, help, ping, shop, staff-list\` or you can type **All** to remove all commands.`)
+                    .setDescription(`'\`${command_to_remove}\`' is not a valid command! The valid commands are: \`ask, balance, claim-reward, daily, help, ping, shop, staff-list, leaderboard, hug\` or you can type **All** to remove all commands.`)
                     .setColor(`DARK_GOLD`)
                     .setTimestamp()
                 ]})
@@ -304,7 +310,7 @@ ${channels}
                     .setTimestamp()
                 ]})
             }
-            } else {
+            }
                 if(command_to_remove.toLowerCase() === `all`){
                     if(channel_exists.blacklist.allowedchannels.commands.includes(`none`)){
                         return interaction.reply({embeds: [
@@ -328,8 +334,10 @@ ${channels}
                    .setColor(`DARK_GOLD`)
                    .setTimestamp()
                ]})
-               await SettingsModel.updateOne({channel: channel.id}, {blacklist: {allowedchannels: {commands: {$pull: {command_to_remove}}}}})
-           }}
+               const array = await SettingsModel.findOne({channel: channel.id})
+                    array.blacklist.allowedchannels.commands.pull(command_to_remove)
+                    await array.save()
+           }
         }
     } else if (interaction.toString().includes(`/settings view-allowed-commands`)){
         const channel = interaction.options.getChannel(`channel`)
